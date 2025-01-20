@@ -1,5 +1,7 @@
 const crypto = require('node:crypto');
 const readline = require('readline');
+const AsciiTable = require('ascii-table');
+
 
 const generateSecureKey = () => crypto.randomBytes(32).toString('hex');
 
