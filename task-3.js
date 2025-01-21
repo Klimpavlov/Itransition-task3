@@ -14,6 +14,40 @@ const generateRandomNumber = (max) => {
 const calculateHMAC = (key, message) =>
     crypto.createHmac('sha256', key).update(message.toString()).digest('hex');
 
+// generate probability Table
+const generateProbabilityTable = (diceConfigs) => {
+    const table = new AsciiTable('Probability of Win for the User');
+    const headers = ['User dice v', ...diceConfigs.map(config => `${config.join(',')}`)];
+    table.setHeading(...headers);
+
+    diceConfigs.forEach((userDice, userIndex) => {
+        const row = diceConfigs.map((computerDice, computerIndex) => {
+            if (userIndex === computerIndex) return `- (0.3333)`;
+            const winProbability = calculateWinProbability(userDice, computerDice);
+            return winProbability.toFixed(4);
+        });
+        table.addRow(`${userDice.join(',')}`, ...row);
+    });
+
+    return table.toString();
+};
+
+// calculate win probability
+const calculateWinProbability = (userDice, computerDice) => {
+    let userWins = 0;
+    const totalThrows = 36;
+
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+            const userThrow = userDice[i];
+            const computerThrow = computerDice[j];
+            if (userThrow > computerThrow) userWins++;
+        }
+    }
+
+    return userWins / totalThrows;
+};
+
 const printHelp = () => {
     console.log(`
 Dice Game Rules:
@@ -139,6 +173,9 @@ const playGame = (diceConfigs) => {
 
     // The main process of the game
     const startGame = () => {
+
+        console.log('\n' + generateProbabilityTable(diceConfigs));
+
         const {key, computerChoice, hmac} = determineFirstMove();
 
         askUserInput('Try to guess my selection (0 or 1): ', (userInput) => {
